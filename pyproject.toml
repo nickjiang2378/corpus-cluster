@@ -1,0 +1,18 @@
+[project]
+name = "corpus-cluster-explorer"
+version = "0.1.0"
+description = "Fast interactive clustering of pre-training corpora using Luxical embeddings"
+requires-python = ">=3.11"
+dependencies = [
+    "luxical",
+    "datasets",
+    "scikit-learn",
+    "numpy",
+    "matplotlib",
+    "tqdm",
+    "anthropic",
+    "pyarrow",
+]
+
+[project.optional-dependencies]
+faiss = ["faiss-cpu"]
