@@ -1,0 +1,103 @@
+{
+  "sweep": [
+    {
+      "n_workers": 1,
+      "elapsed_sec_runs": [
+        39.44709014892578
+      ],
+      "elapsed_sec_median": 39.44709014892578,
+      "throughput_docs_per_sec_median": 507.0082463495634,
+      "pool_setup_secs_runs": [
+        0.029731273651123047
+      ],
+      "num_docs": 20000
+    },
+    {
+      "n_workers": 2,
+      "elapsed_sec_runs": [
+        31.59349799156189
+      ],
+      "elapsed_sec_median": 31.59349799156189,
+      "throughput_docs_per_sec_median": 633.041646902843,
+      "pool_setup_secs_runs": [
+        0.012727499008178711
+      ],
+      "num_docs": 20000
+    },
+    {
+      "n_workers": 4,
+      "elapsed_sec_runs": [
+        27.7482008934021
+      ],
+      "elapsed_sec_median": 27.7482008934021,
+      "throughput_docs_per_sec_median": 720.7674499990935,
+      "pool_setup_secs_runs": [
+        0.016126155853271484
+      ],
+      "num_docs": 20000
+    },
+    {
+      "n_workers": 8,
+      "elapsed_sec_runs": [
+        26.890981435775757
+      ],
+      "elapsed_sec_median": 26.890981435775757,
+      "throughput_docs_per_sec_median": 743.7437732708411,
+      "pool_setup_secs_runs": [
+        0.031260013580322266
+      ],
+      "num_docs": 20000
+    },
+    {
+      "n_workers": 16,
+      "elapsed_sec_runs": [
+        27.17611813545227
+      ],
+      "elapsed_sec_median": 27.17611813545227,
+      "throughput_docs_per_sec_median": 735.9402803709941,
+      "pool_setup_secs_runs": [
+        0.05476641654968262
+      ],
+      "num_docs": 20000
+    },
+    {
+      "n_workers": 32,
+      "elapsed_sec_runs": [
+        27.59584403038025
+      ],
+      "elapsed_sec_median": 27.59584403038025,
+      "throughput_docs_per_sec_median": 724.7468125266258,
+      "pool_setup_secs_runs": [
+        0.11593294143676758
+      ],
+      "num_docs": 20000
+    },
+    {
+      "n_workers": 64,
+      "elapsed_sec_runs": [
+        35.40284872055054
+      ],
+      "elapsed_sec_median": 35.40284872055054,
+      "throughput_docs_per_sec_median": 564.9262904764628,
+      "pool_setup_secs_runs": [
+        0.22466349601745605
+      ],
+      "num_docs": 20000
+    },
+    {
+      "n_workers": 128,
+      "elapsed_sec_runs": [
+        60.179938554763794
+      ],
+      "elapsed_sec_median": 60.179938554763794,
+      "throughput_docs_per_sec_median": 332.33666368402794,
+      "pool_setup_secs_runs": [
+        0.6501307487487793
+      ],
+      "num_docs": 20000
+    }
+  ],
+  "num_docs": 20000,
+  "cpu_count": 224,
+  "numba_num_threads_per_worker": 1
+}

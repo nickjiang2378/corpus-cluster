@@ -8,4 +8,7 @@ data/
 *.memmap
 *.parquet
 logs/
+experiments/
+slurm/
+slurm_logs/
 .env
