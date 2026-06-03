@@ -1,0 +1,119 @@
+[
+  {
+    "method": "optimized",
+    "n": 1000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.0031728744506835938,
+    "peak_vram_gb": 0.037168128
+  },
+  {
+    "method": "naive",
+    "n": 1000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.003646373748779297,
+    "peak_vram_gb": 0.344205824
+  },
+  {
+    "method": "optimized",
+    "n": 10000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.003322601318359375,
+    "peak_vram_gb": 0.067642368
+  },
+  {
+    "method": "naive",
+    "n": 10000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.01205134391784668,
+    "peak_vram_gb": 3.139407872
+  },
+  {
+    "method": "optimized",
+    "n": 100000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.004471778869628906,
+    "peak_vram_gb": 0.365235712
+  },
+  {
+    "method": "naive",
+    "n": 100000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.10680341720581055,
+    "peak_vram_gb": 16.354996224
+  },
+  {
+    "method": "optimized",
+    "n": 500000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.015574932098388672,
+    "peak_vram_gb": 1.686527488
+  },
+  {
+    "method": "naive",
+    "n": 500000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.5286805629730225,
+    "peak_vram_gb": 17.603951104
+  },
+  {
+    "method": "optimized",
+    "n": 1000000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.028055667877197266,
+    "peak_vram_gb": 3.338968064
+  },
+  {
+    "method": "naive",
+    "n": 1000000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 1.054323434829712,
+    "peak_vram_gb": 19.153055232
+  },
+  {
+    "method": "optimized",
+    "n": 5000000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.12964463233947754,
+    "peak_vram_gb": 15.913863168
+  },
+  {
+    "method": "naive",
+    "n": 5000000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 5.270018577575684,
+    "peak_vram_gb": 31.535812096
+  },
+  {
+    "method": "optimized",
+    "n": 13000000,
+    "k": 50,
+    "d": 768,
+    "niter": 5,
+    "time_median": 0.34003782272338867,
+    "peak_vram_gb": 40.684501504
+  }
+]

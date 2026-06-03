@@ -2,13 +2,16 @@ __pycache__/
 *.pyc
 .venv/
 *.egg-info/
+.env
+
+# large / generated artifacts (provided locally, see README)
 data/
 *.npy
 *.npz
 *.memmap
 *.parquet
-logs/
+*.pt
+
+# original messy working tree: kept on disk for reference, not part of the clean repo
+archive/
 experiments/
-slurm/
-slurm_logs/
-.env

@@ -1,35 +1,56 @@
-# Corpus Cluster Explorer
+# ImageNet-21K Cluster Explorer
 
-**CS348K Term Project** — Fast interactive clustering of pre-training corpora.
+Interactive clustering of **13.15M** ImageNet-21K images on a **single GPU**, with each cluster
+automatically named from the sparse-autoencoder (SAE) features its members fire.
 
-## Problem
+Pick `k`, and GPU k-means over all 13.15M DINOv2 embeddings returns in **~3–5 s** (vs minutes for
+CPU baselines); a background pass then labels every cluster by reading off the SAE features common
+to its images — no images are decoded for the naming step.
 
-Researchers need to segment pre-training corpora into topic clusters at varying granularities (k=5 to k=1000+) for data mixing experiments. Current approaches are expensive. This project uses [Luxical](https://github.com/datologyai/luxical), a fast CPU-based embedding model, paired with optimized k-means clustering to enable near-interactive exploration of corpus structure.
+## Layout
 
-## Approach
-
-1. **Embed** the corpus with Luxical-One (192-dim, ~6500 docs/sec on CPU)
-2. **Cluster** embeddings with k-means (scikit-learn baseline, faiss optimized)
-3. **Describe** each cluster using LLM summarization of sampled documents
-4. **Optimize** both embedding and clustering for interactive latency (<10s for re-clustering)
-
-## Dataset
-
-[NVIDIA Nemotron-CC-v2](https://huggingface.co/datasets/nvidia/Nemotron-CC-v2) — 10.3TB, 6.5T tokens across 10 splits.
+```
+algorithms/        clustering implementations, all exposing kmeans(data, k, niter=...)
+  torch_optimized.py   chunked matmul GPU k-means  (used by the dashboard)
+  torch_naive.py       broadcast GPU k-means       (baseline, memory-bound)
+  faiss_kmeans.py      faiss CPU / GPU
+  sklearn_kmeans.py    sklearn MiniBatch / full
+dashboard.py       Gradio app (imports algorithms.torch_optimized)
+scripts/
+  embed_imagenet21k.py DINOv2 ViT-B/14 embedding of the image corpus
+  build_shard_index.py global-index -> (shard, offset) map used for image lookup
+  benchmark.py         sweep k or n over any algorithms (imports the registry)
+  make_plots.py        regenerate the figures from results/benchmarks/
+  train_sae.py + sae.py            train the TopK SAE on DINOv2 activations
+  label_features.py + autointerp_common.py   multimodal auto-labeling of SAE features
+  test_algorithms.py   correctness check (CPU, no GPU needed)
+plots/             clustering_vs_k.png, clustering_vs_n.png
+results/
+  benchmarks/      measured H200 timings (JSON) behind the plots
+  feature_labels/  SAE feature -> concept label CSVs (read by the dashboard)
+archive/           original working tree (older fineweb work, SAE eval pipeline, slurm, data)
+```
 
 ## Setup
 
+Uses [`uv`](https://docs.astral.sh/uv/); the environment is in `.venv/`.
+
+Large artifacts live under `data/` (git-ignored) — point `CCE_DATA` elsewhere if you prefer:
+
+| file | what | produced by |
+|---|---|---|
+| `data/embeddings_imagenet21k.npy` | 13.15M × 768 fp32 DINOv2 CLS embeddings | `scripts/embed_imagenet21k.py` |
+| `data/shard_offsets.npy` | per-shard offsets for image lookup | `scripts/build_shard_index.py` |
+| `data/sae_cls_full.pt` | trained TopK SAE checkpoint | `scripts/train_sae.py` |
+
+## Run
+
 ```bash
-uv pip install -e .
-uv pip install faiss-cpu
+uv run python scripts/test_algorithms.py                       # correctness (CPU)
+uv run python scripts/make_plots.py                            # figures from stored results
+uv run python scripts/benchmark.py --mode k --methods torch-optimized,faiss-gpu,faiss-cpu
+uv run python scripts/benchmark.py --mode n --methods torch-optimized,torch-naive
+uv run python dashboard.py                                     # launches on :7860
 ```
 
-## Usage
-
-```bash
-# Download data sample
-uv run python download_data.py
-
-# Run benchmarks
-uv run python benchmark.py
-```
+See `report.md` for the writeup.

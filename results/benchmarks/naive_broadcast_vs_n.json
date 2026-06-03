@@ -1,0 +1,88 @@
+[
+  {
+    "method": "optimized",
+    "n": 1000,
+    "time": 0.0020513534545898438,
+    "vram_gb": 0.037151744
+  },
+  {
+    "method": "naive",
+    "n": 1000,
+    "time": 0.0025482177734375,
+    "vram_gb": 0.34418944
+  },
+  {
+    "method": "optimized",
+    "n": 5000,
+    "time": 0.0021164417266845703,
+    "vram_gb": 0.050304512
+  },
+  {
+    "method": "naive",
+    "n": 5000,
+    "time": 0.0067958831787109375,
+    "vram_gb": 1.586109952
+  },
+  {
+    "method": "optimized",
+    "n": 10000,
+    "time": 0.002076864242553711,
+    "vram_gb": 0.0674816
+  },
+  {
+    "method": "naive",
+    "n": 10000,
+    "time": 0.012102365493774414,
+    "vram_gb": 3.139247104
+  },
+  {
+    "method": "optimized",
+    "n": 50000,
+    "time": 0.0031256675720214844,
+    "vram_gb": 0.19826432
+  },
+  {
+    "method": "naive",
+    "n": 50000,
+    "time": 0.05449366569519043,
+    "vram_gb": 15.557709824
+  },
+  {
+    "method": "optimized",
+    "n": 100000,
+    "time": 0.004396200180053711,
+    "vram_gb": 0.3636352
+  },
+  {
+    "method": "naive",
+    "n": 100000,
+    "time": 0.10752201080322266,
+    "vram_gb": 31.082680832
+  },
+  {
+    "method": "optimized",
+    "n": 500000,
+    "time": 0.015157461166381836,
+    "vram_gb": 1.678526976
+  },
+  {
+    "method": "naive",
+    "n": 500000,
+    "time": NaN,
+    "vram_gb": NaN,
+    "oom": true
+  },
+  {
+    "method": "optimized",
+    "n": 1000000,
+    "time": 0.028263568878173828,
+    "vram_gb": 3.322968064
+  },
+  {
+    "method": "naive",
+    "n": 1000000,
+    "time": NaN,
+    "vram_gb": NaN,
+    "too_large": true
+  }
+]
