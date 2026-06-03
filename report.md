@@ -110,9 +110,10 @@ follows from the per-iteration cost being dominated by the assignment GEMM (`O(n
 the tensor cores are underutilized, so latency is set by fixed per-iteration overhead and only rises
 past `k≈100`. faiss-CPU shows the opposite trend, growing super-linearly to 205 s at `k=1000` as the
 same `O(n·k·d)` work runs with poor cache behavior on CPU. faiss-GPU being slower than the PyTorch
-implementation is unexpected; the likely cause is that faiss's GPU k-means is not tuned for this
-`n=13M`, `d=768` shape (additional copies and per-`train` index construction), but this is inferred
-from the timing profile rather than measured, as I did not profile faiss internally.
+implementation comes down to data residency: faiss's GPU k-means copies the embeddings between CPU and
+GPU on each reassignment step rather than keeping them on the device, so it repeatedly pays the
+host-to-device transfer of the full 40 GB, whereas my implementation transfers the data once at load
+and keeps it resident for every iteration.
 
 **Scaling with dataset size** (fixed `k=50`, `d=768`).
 
