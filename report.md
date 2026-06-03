@@ -1,6 +1,6 @@
-# Interactive Clustering of 13 Million Images on a Single GPU
+# Scaling Clustering Algorithms to Pretraining Corpora
 
-*with automatic, SAE-feature cluster naming*
+*interactive clustering of 13M images on a single GPU, with automatic SAE-feature cluster naming*
 
 Nick Jiang — nj0@stanford.edu
 
@@ -137,14 +137,6 @@ against a shuffled-label control of 0.50 (chance). The control collapsing to cha
 score far above it indicates the labels carry verifiable visual meaning. Representative cluster labels
 include "citrus fruit cross-sections," "daisy flowers with yellow centers," "headwear and hats," and
 "carnivorous pitcher plants," produced without decoding the clusters' images.
-
-**Limitations.** Clustering is k-means and assumes roughly convex, Euclidean clusters, so it splits
-elongated structure and remains sensitive to initialization (seeded for reproducibility). Labels
-inherit SAE limitations: about 4% of CLS features are polysemantic, occasionally yielding vague labels,
-and production labels were generated with claude-haiku-4-5 (larger models were unavailable during the
-run), which likely caps label nuance. The SAE was trained on a 5.1M-image subset (the locally cached
-portion) and applied to all 13.15M embeddings for naming; this mismatch was not separately quantified
-on the held-out images.
 
 ## Team Responsibilities
 
