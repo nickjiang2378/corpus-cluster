@@ -2,7 +2,7 @@
 
 *interactive clustering of 13M images on a single GPU, with automatic SAE-feature cluster naming*
 
-Nick Jiang — nj0@stanford.edu
+Nick Jiang, nj0@stanford.edu
 
 ## Background and Setup
 
@@ -10,7 +10,7 @@ Exploratory analysis of a large image collection is iterative: cluster the data,
 adjust the granularity, and cluster again, alternating between a coarse view (`k=5`) and fine
 sub-populations (`k=1000`). At 13 million images each pass must be fast enough to keep the loop
 interactive, and the resulting clusters must be interpretable without manually inspecting hundreds of
-images per cluster. Both requirements are bottlenecks at this scale.
+images per cluster.
 
 The input is 13,153,442 ImageNet-21K images, each encoded as a 768-dimensional DINOv2 CLS embedding,
 together a 40 GB `float32` matrix. For a chosen `k`, the system returns the cluster assignments, the
@@ -51,15 +51,14 @@ million: at `k=1000` a one-million-row chunk is 4 GB, so the working set is boun
 rather than by `n`. The centroid update is one `scatter_add_` followed by a count normalization. This
 is `algorithms/torch_optimized.py`, the implementation used by the dashboard.
 
-The optimized formulation outperforms the naive broadcast for two distinct reasons. First, the naive
+The optimized formulation outperforms the naive broadcast for two reasons. First, the naive
 distance is entirely elementwise (subtract, square, sum) and contains no matrix multiplication, so it
-cannot use the GPU's GEMM kernels — the most heavily optimized path on the hardware, running on the
-tensor cores — and instead executes a bandwidth-limited elementwise pass that leaves most of the device
-idle. The expansion recasts the dominant term as a GEMM (`−2 x·cᵀ`), placing the same computation on
+cannot use the GPU's GEMM kernels, which are the most heavily optimized path on the hardware and run on
+the tensor cores. Instead it executes a bandwidth-limited elementwise pass that leaves most of the
+device idle. The expansion recasts the dominant term as a GEMM (`−2 x·cᵀ`), placing the same computation on
 those kernels. Second, the naive version materializes the full `(n,k,d)` difference tensor (`k×` the
 data size) and streams it through HBM, making it memory-bound and ultimately out-of-memory at scale,
-whereas the matmul form never holds `(n,k,d)` and chunking caps the `(n,k)` block at a few GB. The
-optimized method therefore improves compute and memory at the same time.
+whereas the matmul form never holds `(n,k,d)` and chunking caps the `(n,k)` block at a few GB.
 
 The design was reached by comparing baselines. The naive broadcast (`algorithms/torch_naive.py`) is
 more than 20× slower where it fits and runs out of memory near `n=500k` at `k=50`. faiss-CPU is
@@ -78,8 +77,8 @@ a montage of the feature's top-activating images and returns a short concept
 labeled by encoding its ~20 nearest images' embeddings through the SAE, retaining features that fire in
 at least 3 of 20 images, and prompting a small LLM for a distinguishing label.
 
-Routing the label through SAE features is a performance decision. The direct alternative — sending each
-cluster's representative images to a multimodal LLM — is dominated by image I/O, because the images are
+Routing the label through SAE features is a performance decision. The direct alternative, sending each
+cluster's representative images to a multimodal LLM, is dominated by image I/O, because the images are
 not local and must be fetched and decoded from HuggingFace before the model runs. The feature-based
 path uses only the embeddings already resident on the GPU, so labeling requires no image I/O and the
 LLM reads only a short list of feature names; images are loaded lazily, and only for a cluster the user
@@ -124,11 +123,7 @@ The optimized method scales linearly in `n`, reaching the full corpus in 0.34 s 
 the tensor cores more efficiently). The naive method exhibits both failure modes on this plot: where it
 fits it is already more than 20× slower, attributable to the absence of any matrix multiplication and
 hence no tensor-core use; and its peak memory, dominated by the `(n,k,d)` difference tensor, exhausts
-the GPU near `n=500k`, so it never reaches the millions. These effects compound — the naive method is
-slower where it runs and then cannot run at all — which is the central result: the improvement is not a
-constant factor but the difference between an infeasible method and an interactive one on identical
-hardware, computing the same assignments. Optimized peak VRAM is essentially the resident data (40 GB
-at 13M) plus a few GB for the distance block, well within the 140 GB budget.
+the GPU near `n=500k`, so it never reaches the millions.
 
 **Cluster labels.** The labels depend on the SAE, evaluated separately (full results in the archived
 SAE writeup). The CLS SAE reconstructs accurately (FVU 0.18, no dead features), and its auto-generated
@@ -153,5 +148,5 @@ Solo project; all work by Nick Jiang.
    (DINOv2 ViT-B/14 backbone.)
 5. L. Gao et al. *Scaling and evaluating sparse autoencoders.* 2024. (TopK SAE recipe, AuxK.)
 6. Jiang et al. *Interpretable Embeddings with Sparse Autoencoders: A Data Analysis Toolkit.* 2025.
-   <https://interp-embed.com> — labeling SAE feature dimensions from activated versus non-activated
-   examples and using them to cluster and diff data, adapted here to name image clusters.
+   <https://interp-embed.com>. Labels SAE feature dimensions from activated versus non-activated
+   examples and uses them to cluster and diff data, adapted here to name image clusters.
