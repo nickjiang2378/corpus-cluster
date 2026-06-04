@@ -1,7 +1,5 @@
 # Scaling Clustering Algorithms to Pretraining Corpora
 
-*interactive clustering of 13M images on a single GPU, with automatic SAE-feature cluster naming*
-
 Nick Jiang, nj0@stanford.edu
 
 ## Background and Setup
@@ -18,20 +16,12 @@ cluster sizes, and a short text label per cluster. The performance target is to 
 corpus for any `k` in [5, 1000] in under ten seconds on a single H200, with no multi-node execution at
 query time, and to label each cluster without decoding images on every request.
 
-This yields a falsifiable hypothesis: a GPU k-means expressed through a matrix-multiply distance
-formulation can cluster the full corpus in under ten seconds for every `k` up to 1000 and outperform
-faiss, and SAE features can label the resulting clusters without loading their images. The hypothesis
-fails if clustering remains in the tens of seconds or requires approximating the distances.
-
-The technical crux is a single step of k-means. Each iteration assigns every point to its nearest
-centroid, which requires the distance matrix `D ∈ ℝ^{n×k}`. Computing `‖x−c‖²` by broadcasting
-`(n,1,d) − (1,k,d) → (n,k,d)` produces, at `n=13.15M`, `k=1000`, `d=768`, a roughly 40 TB intermediate
-that cannot be allocated on any GPU. The project reduces to making this step both feasible and fast on
-one device.
+K-means is a simple algorithm. First, we initialize k random centroids. Then, we assign our embeddings to the closest centroid and then recompute the centroids, repeating for a fixed number of iterations. This project aims to speed up the assignment portion of this algorithm. Naively, we would compute `‖x−c‖²` by broadcasting
+`(n,1,d) − (1,k,d) → (n,k,d)`, then squaring and summing along dimension 2 (see `algorithms/`). However, at `n=13.15M`, `k=1000`, `d=768`, this intermediate matrix would be roughly 40 TB, which isn't feasible for storing on a GPU.
 
 ## Approach
 
-The system has three stages: embedding, clustering, and naming. Embedding
+The system has three stages: embedding, clustering, and naming (to describe the cluster). Embedding
 (`scripts/embed_imagenet21k.py`) streams ImageNet-21K parquet shards from HuggingFace, decodes JPEGs on
 a 32-thread pool (PIL releases the GIL), runs DINOv2 ViT-B/14 in fp16, and writes fp32 CLS embeddings
 shard by shard with a resumable checkpoint. Throughput is about 327 images/sec on one H200 (~11 hours
@@ -44,7 +34,7 @@ Clustering avoids the `(n,k,d)` intermediate by expanding the squared distance:
 ‖x − c‖² = ‖x‖² − 2 x·cᵀ + ‖c‖²
 ```
 
-`‖x‖²` is constant across centroids for a given point and does not affect the `argmin`, so it is
+`‖x‖²` is constant across centroids for a given point and does not affect the `argmin`, so it can be
 omitted. Each iteration computes `−2 x·cᵀ + ‖c‖²` in a single `torch.addmm`, producing the `(n,k)`
 distance block directly, then takes the `argmin` over `k`. Rows are processed in chunks of about one
 million: at `k=1000` a one-million-row chunk is 4 GB, so the working set is bounded by the chunk size
@@ -68,7 +58,7 @@ but was not adopted, since fp32 with chunking already satisfies the memory and a
 (The recorded `k≥500` points used that fp16 variant, which accounts for the slight dip in the latency
 curve.)
 
-Naming uses a TopK sparse autoencoder trained on the DINOv2 CLS embeddings (`scripts/train_sae.py`,
+To name or label each cluster, we use a TopK sparse autoencoder trained on the DINOv2 CLS embeddings (`scripts/train_sae.py`,
 `sae.py`), following the "Scaling and evaluating sparse autoencoders" recipe (pre-bias subtraction,
 exact top-k activation, unit-norm tied decoder, AuxK dead-feature revival), with `d_sae=12288` (16×
 expansion) and `k=64`. Each of the ~12,288 features is labeled once, offline: a multimodal LLM is shown
@@ -109,8 +99,8 @@ everywhere, and is 2–3× faster than faiss-GPU and up to ~50× faster than fai
 follows from the per-iteration cost being dominated by the assignment GEMM (`O(n·k·d)`): at small `k`
 the tensor cores are underutilized, so latency is set by fixed per-iteration overhead and only rises
 past `k≈100`. faiss-CPU shows the opposite trend, growing super-linearly to 205 s at `k=1000` as the
-same `O(n·k·d)` work runs with poor cache behavior on CPU. faiss-GPU being slower than the PyTorch
-implementation comes down to data residency: faiss's GPU k-means copies the embeddings between CPU and
+same `O(n·k·d)` work runs with poor cache behavior on CPU. faiss-GPU turns out to be slower than the PyTorch
+implementation due to data residency: faiss's GPU k-means copies the embeddings between CPU and
 GPU on each reassignment step rather than keeping them on the device, so it repeatedly pays the
 host-to-device transfer of the full 40 GB, whereas my implementation transfers the data once at load
 and keeps it resident for every iteration.
